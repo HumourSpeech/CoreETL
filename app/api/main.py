@@ -1,3 +1,7 @@
+from app.logging.logger import logging
+from app.exception.exception import CoreETL
+import sys
+
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.core.db import init_db
@@ -8,13 +12,15 @@ import time
 
 # automatically start ETL on startup
 def start_etl_loop():
+    logging.info("ETL thread started, waiting for DB to be ready...")
     # Wait a bit for DB to be ready
     time.sleep(5)
-    print("Starting initial ETL run...")
+    logging.info("Starting initial ETL run...")
     try:
         run_etl()
     except Exception as e:
-        print(f"Initial ETL failed: {e}")
+        logging.info(f"Initial ETL failed: {e}")
+        raise CoreETL(e, sys)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
